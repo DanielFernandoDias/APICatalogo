@@ -9,6 +9,7 @@
         {
             loggerName = name;
             loggerConfig = config;
+
         }
 
         public IDisposable BeginScope<TState>(TState state)

@@ -13,7 +13,6 @@ namespace APICatalogo.Repository
         public IEnumerable<Categoria> GetCategoriasProdutos()
         {
             return Get().Include(c => c.Produtos).ToList();
-
         }
     }
 }

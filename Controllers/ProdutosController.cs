@@ -48,7 +48,6 @@ namespace APICatalogo.Controllers
         [HttpGet("{id:int}", Name = "ObterProduto")]
         public async Task<ActionResult<Produto>> GetAsync(int id) 
         {
-
             var produto = await _context.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.ProdutoId == id);
             if(produto is null)
             {

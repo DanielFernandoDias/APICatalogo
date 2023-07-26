@@ -7,9 +7,7 @@ namespace APICatalogo.Filters
         public readonly ILogger<ApiLoggingFilter> _logger;
         public ApiLoggingFilter(ILogger<ApiLoggingFilter> logger)
         {
-
             _logger = logger;
-
         }
         //executa antes da action
         public void OnActionExecuting(ActionExecutingContext context)

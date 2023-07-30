@@ -1,6 +1,8 @@
-﻿using APICatalogo.Models;
+﻿using APICatalogo.DTOs;
+using APICatalogo.Models;
 using APICatalogo.Repository;
 using APICatalogo.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APICatalogo.Controllers
@@ -11,13 +13,15 @@ namespace APICatalogo.Controllers
     {
         private readonly IUnityOfWork _uof;
         private readonly IConfiguration _configuration; // Acesso aos modelos de configurações
-        private readonly ILogger _logger; 
+        private readonly ILogger _logger;
+        private readonly IMapper _mapper;
 
-        public CategoriasController(IUnityOfWork uof, IConfiguration configuration, ILogger<CategoriasController> logger)
+        public CategoriasController(IUnityOfWork uof, IConfiguration configuration, ILogger<CategoriasController> logger, IMapper mapper)
         {
             _uof = uof;
             _configuration = configuration;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet("Autor")]
@@ -28,14 +32,14 @@ namespace APICatalogo.Controllers
         }
 
         [HttpGet("Conexao")]
-        public String GetConexao()
+        public string GetConexao()
         {
             var StringConnection = _configuration["ConnectionStrings:DefaultConnection"];
             return $"StringConection = {StringConnection}";
         }
 
         [HttpGet("saudacao/{nome}")]
-        public ActionResult<String> GetSaudacao([FromServices] IMeuServico meuServico, String nome) 
+        public ActionResult<String> GetSaudacao([FromServices] IMeuServico meuServico, string nome) 
         {
             return meuServico.Saudacao(nome);
         }
@@ -43,21 +47,21 @@ namespace APICatalogo.Controllers
 
 
         [HttpGet("produtos")]
-        public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
+        public ActionResult<IEnumerable<CategoriaDto>> GetCategoriasProdutos()
         {
             _logger.LogInformation("=============== GET api/Categorias/Produtos ===================");
             var categorias = _uof.CategoriaRepository.GetCategoriasProdutos().ToList();
-            return categorias;
+            return _mapper.Map<List<CategoriaDto>>(categorias);
         } 
 
         [HttpGet]
-        public ActionResult<IEnumerable<Categoria>> Get()
+        public ActionResult<IEnumerable<CategoriaDto>> Get()
         {
             try
             {
                 _logger.LogInformation("=============== GET api/Categorias/ ===================");
                 var categorias = _uof.CategoriaRepository.Get().ToList();
-                return categorias;
+                return _mapper.Map<List<CategoriaDto>>(categorias);
             }
             catch (Exception)
             {
@@ -68,7 +72,7 @@ namespace APICatalogo.Controllers
         }
 
         [HttpGet("{id:int}", Name = "ObterCategoria")]
-        public ActionResult<Categoria> get(int id)
+        public ActionResult<CategoriaDto> get(int id)
         {
             try
             {
@@ -79,7 +83,7 @@ namespace APICatalogo.Controllers
                     _logger.LogInformation($"=============== GET api/Categorias/id = {id} NOT FOUND ===================");
                     return NotFound("Categoria não encontrada...");
                 }
-                return Ok(categoria);
+                return _mapper.Map<CategoriaDto>(categoria);
             }
             catch (Exception)
             {
@@ -89,28 +93,30 @@ namespace APICatalogo.Controllers
         } 
 
         [HttpPost]
-        public ActionResult post(Categoria categoria)
+        public ActionResult post(CategoriaDto categoriaDto)
         {
-            if (categoria is null)
+            if (categoriaDto is null)
             {
                 return BadRequest();
             }
+            var categoria = _mapper.Map<Categoria>(categoriaDto);
             _uof.CategoriaRepository.Add(categoria);
             _uof.Commit();
 
-            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoria);
+            return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoriaDto);
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult put(int id, Categoria categoria)
+        public ActionResult put(int id, Categoria categoriaDto)
         {
-            if(id != categoria.CategoriaId)
+            if(id != categoriaDto.CategoriaId)
             {
                 return BadRequest();
             }
+            var categoria = _mapper.Map<Categoria>(categoriaDto);
             _uof.CategoriaRepository.Update(categoria);
             _uof.Commit();
-            return Ok(categoria);
+            return Ok(categoriaDto);
 
         }
 
@@ -125,10 +131,7 @@ namespace APICatalogo.Controllers
             _uof.CategoriaRepository.Delete(categoria);
             _uof.Commit();
 
-            return Ok(categoria);
+            return Ok(_mapper.Map<CategoriaDto>(categoria));
         }
-
-
-
     }
 }

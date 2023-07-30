@@ -1,9 +1,11 @@
 using APICatalogo.Context;
+using APICatalogo.DTOs.Mappings;
 using APICatalogo.Extensions;
 using APICatalogo.Filters;
 using APICatalogo.Logging;
 using APICatalogo.Repository;
 using APICatalogo.Services;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -27,6 +29,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddTransient<IMeuServico, MeuServico>();
 builder.Services.AddScoped<IUnityOfWork, UnityOfWork>();
+
+// configurando autoMapper
+var mappingConfig = new MapperConfiguration(mc => 
+    {
+        mc.AddProfile(new MappingProfile());
+    });
+IMapper mapper = mappingConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
 
 
 
